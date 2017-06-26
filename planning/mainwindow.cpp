@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QPoint>
 #include <QMouseEvent>
-
+#include <math.h>
 using namespace std;
 #include<iostream>
 #include <fstream>
@@ -34,16 +34,19 @@ MainWindow::~MainWindow()
 
 void MainWindow::mousePressEvent(QMouseEvent * e){
 
-
+    if(!ui->graphicsView->isEnabled())
+        return;
     QPoint origin = ui->graphicsView->mapFromGlobal(QCursor::pos());
     QPointF relativeOrigin = ui->graphicsView->mapToScene(origin);
 
     //POSITION ON THE GRID CLICKED
-    int posXCliked =floor(relativeOrigin.x()/QT_CELL_SIZE);
-    int posYCliked =floor(relativeOrigin.y()/QT_CELL_SIZE);
+    int posXCliked=floor(relativeOrigin.x()/QT_CELL_SIZE);
+    int posYCliked=floor(relativeOrigin.y()/QT_CELL_SIZE);
 
-    if (originSet&&goalSet)
+    if (originSet&&goalSet){
+        ui->lblTopMessage->setText("Origin and Goal Points already set");
         return;
+    }
     // check is position is free
     if (gridMap.grid[posXCliked][posYCliked].obstacle){
         ui->lblTopMessage->setText("Not a free cell, Click on a free space");
@@ -72,6 +75,7 @@ void MainWindow::paintMouseClickPos(int posX,int posY,int originOrGoal){
 
 void MainWindow::on_btnGenerateMap_clicked()
 {
+    ui->graphicsView->setEnabled(true);
     ui->lblTopMessage->setText("Generating Map");
 
     QBrush greenBrush(Qt::green);

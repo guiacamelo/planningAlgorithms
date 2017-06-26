@@ -38,10 +38,6 @@ public slots:
 
 private slots:
     void on_btnGenerateMap_clicked();
-
-
-    void on_btnGenerateMap_2_clicked();
-
     void on_btnPlanPath_clicked();
 
 private:

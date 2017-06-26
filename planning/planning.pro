@@ -25,10 +25,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    gridmap.cpp
+    gridmap.cpp \
+    unionfind.cpp
 
 HEADERS  += mainwindow.h \
     gridmap.h \
-    globals.h
+    globals.h \
+    unionfind.h
 
 FORMS    += mainwindow.ui

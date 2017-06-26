@@ -1,0 +1,16 @@
+make-set 0
+make-set 1
+make-set 2
+make-set 3
+make-set 4
+make-set 5
+union 0 1
+find 1
+find 0
+union 5 1
+find 0
+find 1
+find 3
+union 3 4
+find 4
+find 3
