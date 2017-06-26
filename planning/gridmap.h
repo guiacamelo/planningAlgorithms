@@ -3,10 +3,10 @@
 #include"globals.h"
 #include <vector>
 
-class gridMap
+class GridMap
 {
 public:
-    gridMap();
+    GridMap();
     GRID grid;
 };
 

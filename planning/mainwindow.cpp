@@ -1,6 +1,10 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "gridmap.h"
+#include <QDebug>
+#include <QPoint>
+#include <QMouseEvent>
+
 using namespace std;
 #include<iostream>
 #include <fstream>
@@ -18,11 +22,52 @@ MainWindow::MainWindow(QWidget *parent) :
 
     time_t now;
     srand(time(&now));
+    bool originSet=false;
+    bool goalSet=false;
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+
+}
+
+void MainWindow::mousePressEvent(QMouseEvent * e){
+
+
+    QPoint origin = ui->graphicsView->mapFromGlobal(QCursor::pos());
+    QPointF relativeOrigin = ui->graphicsView->mapToScene(origin);
+
+    //POSITION ON THE GRID CLICKED
+    int posXCliked =floor(relativeOrigin.x()/QT_CELL_SIZE);
+    int posYCliked =floor(relativeOrigin.y()/QT_CELL_SIZE);
+
+    if (originSet&&goalSet)
+        return;
+    // check is position is free
+    if (gridMap.grid[posXCliked][posYCliked].obstacle){
+        ui->lblTopMessage->setText("Not a free cell, Click on a free space");
+    }else{
+
+        if (!originSet){
+            paintMouseClickPos(posXCliked,posYCliked,ORIGIN);
+            ui->lblTopMessage->setText("Origin Point Set");
+            originSet=true;
+        }else if (!goalSet){
+            paintMouseClickPos(posXCliked,posYCliked,GOAL);
+            ui->lblTopMessage->setText("Goal Point Set");
+            goalSet=true;
+        }else{
+            ui->lblTopMessage->setText("Origin and Goal Points already set");
+        }
+    }
+}
+
+void MainWindow::paintMouseClickPos(int posX,int posY,int originOrGoal){
+    if (originOrGoal == ORIGIN)
+        scene->addRect(posX*QT_CELL_SIZE,posY*QT_CELL_SIZE,QT_CELL_SIZE,QT_CELL_SIZE,QPen(Qt::green),QBrush(Qt::green));
+    if (originOrGoal == GOAL)
+        scene->addRect(posX*QT_CELL_SIZE,posY*QT_CELL_SIZE,QT_CELL_SIZE,QT_CELL_SIZE,QPen(Qt::red),QBrush(Qt::red));
 }
 
 void MainWindow::on_btnGenerateMap_clicked()
@@ -46,11 +91,15 @@ void MainWindow::on_btnGenerateMap_clicked()
     coneGrayPen.setWidth(2);
 
 
-    gridMap gridMap;
+
 
     GRID newGrid (GRID_SIZE,std::vector <GRID_CELL>(GRID_SIZE));
     gridMap.grid= newGrid;
     scene->clear();
+
+    originSet=false;
+    goalSet=false;
+
     generateGridAndNodes(gridMap.grid);
     generateAndDrawObstacles(gridMap.grid);
     printObstacleGridToFile(gridMap.grid);
@@ -77,6 +126,7 @@ void MainWindow::generateGridAndNodes(GRID & grid){
     }
     scene->addLine((i)*QT_CELL_SIZE,0,(i)*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE);
     scene->addLine(0,(i)*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE,(i)*QT_CELL_SIZE);
+
     scene->addLine((i+1)*QT_CELL_SIZE,0,(i+1)*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE);
     scene->addLine(0,(i+1)*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE,(i+1)*QT_CELL_SIZE);
 }
@@ -162,13 +212,13 @@ void MainWindow::printObstacleGridToFile(GRID & grid){
     outputFile.open("obstacleGrid.txt");
     for (int i = 0; i < grid.size()-1; ++i) {
         for (int j=0; j < grid.size()-1; ++j) {
-                if(grid[i][j].obstacle)
-                    outputFile << "O";
-                else
-                    outputFile << "_";
+            if(grid[i][j].obstacle)
+                outputFile << "O";
+            else
+                outputFile << "_";
 
-            }
-            outputFile << endl;
+        }
+        outputFile << endl;
     }
 }
 
@@ -176,10 +226,10 @@ void MainWindow::plotObstacles(GRID & grid){
     for (int i = 0; i < grid.size()-1; ++i) {
         for (int j=0; j < grid.size()-1; ++j) {
             if(grid[i][j].obstacle)
-                scene->addRect(i*QT_CELL_SIZE +2 ,
-                               j*QT_CELL_SIZE +2 ,
-                               QT_CELL_SIZE -4,
-                               QT_CELL_SIZE -4,
+                scene->addRect(i*QT_CELL_SIZE +QT_CELL_SIZE/4 ,
+                               j*QT_CELL_SIZE +QT_CELL_SIZE/4 ,
+                               QT_CELL_SIZE -QT_CELL_SIZE/2.0,
+                               QT_CELL_SIZE -QT_CELL_SIZE/2.0,
                                QPen(Qt::blue),QBrush((Qt::blue)));
 
         }
@@ -187,3 +237,11 @@ void MainWindow::plotObstacles(GRID & grid){
 }
 
 
+
+
+
+void MainWindow::on_btnPlanPath_clicked()
+{
+    ui->lblTopMessage->setText("Planning the Path!");
+
+}

@@ -1,7 +1,7 @@
 #include "gridmap.h"
 
-gridMap::gridMap()
+GridMap::GridMap()
 {
 
 }
-void generateGridAndNodes(gridMap & gridMap);
+

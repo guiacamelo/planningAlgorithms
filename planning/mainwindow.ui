@@ -41,6 +41,12 @@
       <height>1600</height>
      </size>
     </property>
+    <property name="cursor" stdset="0">
+     <cursorShape>ArrowCursor</cursorShape>
+    </property>
+    <property name="mouseTracking">
+     <bool>false</bool>
+    </property>
     <property name="transformationAnchor">
      <enum>QGraphicsView::NoAnchor</enum>
     </property>
@@ -83,6 +89,19 @@
       </widget>
      </item>
     </layout>
+   </widget>
+   <widget class="QPushButton" name="btnPlanPath">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>1010</y>
+      <width>279</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Plan Path</string>
+    </property>
    </widget>
   </widget>
  </widget>

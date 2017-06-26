@@ -5,10 +5,11 @@
 
 #define QT_CELL_SIZE 8
 #define GRID_SIZE 100
-#define SQUARES 0
-#define RECTANGLES 5
+#define SQUARES 50
+#define RECTANGLES 50
 #define MAX_OBJECT_PROPORTION 0.1
-
+#define ORIGIN 0
+#define GOAL 1
 
 
 typedef struct {
@@ -19,8 +20,12 @@ typedef struct {
 } NODE;
 
 typedef struct {
-    double obstacle;
+    bool obstacle;
     double distance;
+    int originX;
+    int originY;
+    int goalX;
+    int goalY;
     NODE localNode;
 } GRID_CELL;
 
