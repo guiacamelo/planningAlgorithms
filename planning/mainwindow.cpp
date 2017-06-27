@@ -36,6 +36,11 @@ void MainWindow::mousePressEvent(QMouseEvent * e){
 
     if(!ui->graphicsView->isEnabled())
         return;
+    if (originSet&&goalSet){
+        ui->lblTopMessage->setText("Origin and Goal Points already set");
+        return;
+    }
+
     QPoint origin = ui->graphicsView->mapFromGlobal(QCursor::pos());
     QPointF relativeOrigin = ui->graphicsView->mapToScene(origin);
 
@@ -43,10 +48,14 @@ void MainWindow::mousePressEvent(QMouseEvent * e){
     int posXCliked=floor(relativeOrigin.x()/QT_CELL_SIZE);
     int posYCliked=floor(relativeOrigin.y()/QT_CELL_SIZE);
 
-    if (originSet&&goalSet){
-        ui->lblTopMessage->setText("Origin and Goal Points already set");
+    //protect from clicks out of the grid
+    if(posXCliked<0||posYCliked<0)
         return;
-    }
+
+    //protect from clicks out of the grid
+    if(posXCliked>gridMap.grid.size()||posYCliked>gridMap.grid.size())
+        return;
+
     // check is position is free
     if (gridMap.grid[posXCliked][posYCliked].obstacle){
         ui->lblTopMessage->setText("Not a free cell, Click on a free space");
@@ -56,10 +65,15 @@ void MainWindow::mousePressEvent(QMouseEvent * e){
             paintMouseClickPos(posXCliked,posYCliked,ORIGIN);
             ui->lblTopMessage->setText("Origin Point Set");
             originSet=true;
+            //Save origin on gridMap Obect
+            gridMap.setOrigin(posXCliked,posYCliked);
+
         }else if (!goalSet){
             paintMouseClickPos(posXCliked,posYCliked,GOAL);
             ui->lblTopMessage->setText("Goal Point Set");
             goalSet=true;
+            //Save goal on gridMap Obect
+            gridMap.setGoal(posXCliked,posYCliked);
         }else{
             ui->lblTopMessage->setText("Origin and Goal Points already set");
         }
@@ -68,7 +82,7 @@ void MainWindow::mousePressEvent(QMouseEvent * e){
 
 void MainWindow::paintMouseClickPos(int posX,int posY,int originOrGoal){
     if (originOrGoal == ORIGIN)
-        scene->addRect(posX*QT_CELL_SIZE,posY*QT_CELL_SIZE,QT_CELL_SIZE,QT_CELL_SIZE,QPen(Qt::green),QBrush(Qt::green));
+        scene->addRect(posX*QT_CELL_SIZE,posY*QT_CELL_SIZE,QT_CELL_SIZE,QT_CELL_SIZE,QPen(Qt::magenta),QBrush(Qt::magenta));
     if (originOrGoal == GOAL)
         scene->addRect(posX*QT_CELL_SIZE,posY*QT_CELL_SIZE,QT_CELL_SIZE,QT_CELL_SIZE,QPen(Qt::red),QBrush(Qt::red));
 }
@@ -247,5 +261,10 @@ void MainWindow::plotObstacles(GRID & grid){
 void MainWindow::on_btnPlanPath_clicked()
 {
     ui->lblTopMessage->setText("Planning the Path!");
+    Graph graph;
+    graph.setGoal(gridMap.goalX,gridMap.goalY);
 
+    graph.setOrigin(gridMap.originX,gridMap.originY);
+
+    graph.buildRoadMap(gridMap.grid);
 }

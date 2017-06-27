@@ -22,10 +22,7 @@ typedef struct {
 typedef struct {
     bool obstacle;
     double distance;
-    int originX;
-    int originY;
-    int goalX;
-    int goalY;
+
     NODE localNode;
 } GRID_CELL;
 

@@ -26,11 +26,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         mainwindow.cpp \
     gridmap.cpp \
-    unionfind.cpp
+    unionfind.cpp \
+    graph.cpp
 
 HEADERS  += mainwindow.h \
     gridmap.h \
     globals.h \
-    unionfind.h
+    unionfind.h \
+    graph.h \
+    vertex.h
 
 FORMS    += mainwindow.ui

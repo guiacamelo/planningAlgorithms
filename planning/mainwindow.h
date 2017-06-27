@@ -10,6 +10,7 @@
 #include <QPoint>
 #include <QMouseEvent>
 #include "gridmap.h"
+#include "graph.h"
 namespace Ui {
 class MainWindow;
 }
