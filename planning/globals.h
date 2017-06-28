@@ -2,16 +2,28 @@
 #define GLOBALS_H
 #include "globals.h"
 #include <vector>
-
+#include<math.h>
 #define QT_CELL_SIZE 8
-#define GRID_SIZE 100
-#define SQUARES 50
-#define RECTANGLES 50
+//#define GRID_SIZE 100
+#define GRID_SIZE 4
+//#define SQUARES 50
+//#define RECTANGLES 50
+#define SQUARES 1
+#define RECTANGLES 0
+
 #define MAX_OBJECT_PROPORTION 0.1
+
 #define ORIGIN 0
 #define GOAL 1
+#define NEAREST_K 15
+#define NEAR 5
+#define RADIUS_K 4
 
-
+#define SAMPLEPERCENTAGE 0.09
+#define SAMPLES round(double(GRID_SIZE*GRID_SIZE*SAMPLEPERCENTAGE))
+#define MAX_NUMBER_OF_NODES GRID_SIZE*GRID_SIZE
+#define STOP_WHEN_PATH_FOUND true
+// this will be deleted
 typedef struct {
     int id;
     int distance;
@@ -22,8 +34,9 @@ typedef struct {
 typedef struct {
     bool obstacle;
     double distance;
-
-    NODE localNode;
+    int id;
+    bool isVertex;
+    NODE localNode; // this will be deleted
 } GRID_CELL;
 
 typedef std::vector<std::vector<GRID_CELL>> GRID;

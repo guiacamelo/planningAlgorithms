@@ -1,5 +1,6 @@
 #ifndef GRIDMAP_H
 #define GRIDMAP_H
+
 #include"globals.h"
 #include <vector>
 
@@ -14,6 +15,7 @@ public:
     int originY;
     int goalX;
     int goalY;
+
 };
 
 #endif // GRIDMAP_H

@@ -29,7 +29,15 @@ public:
     void printObstacleGridToFile(GRID & grid);
     void plotObstacles(GRID & grid);
     void paintMouseClickPos(int posX,int posY,int originOrGoal);
+    void printGridIdToFile(GRID & grid);
+    void plotVectorNode(int x,int y);
 
+    void plotSamples(vector<int> sampleIds,vector<int> sampleIdsX,vector<int> sampleIdsY);
+    void getDisconectedNeighborsInRadius(int x,int y,UnionFind *unionFind,Graph & graph);
+    bool colisionCheckBresenham(int const sx,int const sy,int rx,int ry);
+    int signer(int n);
+    void plotEdge(int originX,int originY,int destX,int destY);
+    vector<int> dijkstra(Graph graph, int s, int t);
 signals:
 
 public slots:
@@ -42,8 +50,8 @@ private slots:
     void on_btnPlanPath_clicked();
 
 private:
-    Ui::MainWindow *ui;
 
+    Ui::MainWindow *ui;
     QGraphicsScene *scene;
     QBrush grayBrush;
     QPen grayPen;
