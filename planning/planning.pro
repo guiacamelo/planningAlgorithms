@@ -27,13 +27,16 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     gridmap.cpp \
     unionfind.cpp \
-    graph.cpp
+    graph.cpp \
+    heap.cpp
 
 HEADERS  += mainwindow.h \
     gridmap.h \
     globals.h \
     unionfind.h \
     graph.h \
-    vertex.h
+    vertex.h \
+    djikstra.h \
+    heap.h
 
 FORMS    += mainwindow.ui

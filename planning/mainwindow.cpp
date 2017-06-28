@@ -1,3 +1,4 @@
+#include "heap.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "gridmap.h"
@@ -137,10 +138,14 @@ void MainWindow::on_btnGenerateMap_clicked()
 void MainWindow::generateGridAndNodes(GRID & grid){
     int contId=0;
     int i;
+
     for (i = 0; i < grid.size(); ++i) {
         // Create the grid
-        scene->addLine(i*QT_CELL_SIZE,0,i*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE);
-        scene->addLine(0,i*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE,i*QT_CELL_SIZE);
+        if (PLOT_GRID){
+            scene->addLine(i*QT_CELL_SIZE,0,i*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE);
+            scene->addLine(0,i*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE,i*QT_CELL_SIZE);
+
+        }
         for (int j=0; j < grid.size(); ++j) {
 
             grid[i][j].distance=-1;
@@ -165,6 +170,8 @@ void MainWindow::generateGridAndNodes(GRID & grid){
     }
     scene->addLine((i)*QT_CELL_SIZE,0,(i)*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE);
     scene->addLine(0,(i)*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE,(i)*QT_CELL_SIZE);
+    scene->addLine(0,0,0,GRID_SIZE*QT_CELL_SIZE);
+    scene->addLine(0,0,GRID_SIZE*QT_CELL_SIZE,0);
 
     //    scene->addLine((i+1)*QT_CELL_SIZE,0,(i+1)*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE);
     //    scene->addLine(0,(i+1)*QT_CELL_SIZE,GRID_SIZE*QT_CELL_SIZE,(i+1)*QT_CELL_SIZE);
@@ -326,7 +333,8 @@ void MainWindow::on_btnPlanPath_clicked()
 
     graph.buildRoadMapSamples(gridMap.grid,gridMap.originX,gridMap.originY,gridMap.goalX,gridMap.goalY);
     plotSamples(graph.sampleIds,graph.sampleIdsX,graph.sampleIdsY);
-
+    int originId=gridMap.grid[gridMap.originX][gridMap.originY].id;
+    int goalId=gridMap.grid[gridMap.goalX][gridMap.goalY].id;
     //create unionFind
     UnionFind *unionFind = new UnionFind(MAX_NUMBER_OF_NODES);
 
@@ -335,15 +343,28 @@ void MainWindow::on_btnPlanPath_clicked()
     for (int i = 0; i < graph.sampleIds.size(); ++i) {
         getDisconectedNeighborsInRadius(graph.sampleIdsX[i],graph.sampleIdsY[i], unionFind,graph);
     }
-    if (unionFind->isSameSet(gridMap.grid[gridMap.originX][gridMap.originY].id,gridMap.grid[gridMap.goalX][gridMap.goalY].id) )
+    if (unionFind->isSameSet(originId,goalId) )
         cout<<" Yes\n"<<endl;
     else
         cout<<" No\n"<<endl;
 
-    cout<<unionFind->findSet(gridMap.grid[gridMap.originX][gridMap.originY].id)<< " "<<endl;
-    cout<<unionFind->findSet(gridMap.grid[gridMap.goalX][gridMap.goalY].id)<< " "<<endl;
+    cout<<unionFind->findSet(originId)<< " "<<endl;
+    cout<<unionFind->findSet(goalId)<< " "<<endl;
 
-    graph.print();
+    //graph.print();
+    vector<int> dist;
+    dist = dijkstra(graph, originId,goalId);
+    int distance = dist[goalId];
+
+
+    if(distance != -1) {
+        cout << distance << endl;
+        cout<<"Distance between " <<originId <<" and "<< goalId<<" is "<< distance<< endl;
+
+    } else{
+        cout << "inf" << endl;
+        cout << "Distance between " <<originId <<" and "<< goalId<<" is inf";
+    }
 }
 
 
@@ -370,10 +391,14 @@ void MainWindow::getDisconectedNeighborsInRadius(int x,int y,UnionFind  *unionFi
                         // no colision between the two points, a connection can be made
 
                         //calculate de distance
-                        int diffx=abs(x-i);
-                        int diffy=abs(y-j);
-                        int distance=sqrt((diffx*diffx)*(diffy*diffy));
-                        graph.addEdge(sampleId,neighborId,distance);
+                        double diffx=abs(x-i);
+                        double diffy=abs(y-j);
+                        diffx*=diffx;
+                        diffy*= diffy;
+                        double distance=sqrt((diffx)+(diffy));
+                        cout<< "Distance = " << distance<<"    diffx = " << diffx << "   x = "<<x << "  i = "<<i <<"   diffy = " <<diffy<<"  y = " <<y<< "   j = "<< j<<"\n"<<endl;
+                        graph.addEdge(sampleId,neighborId,ceil(distance));
+
                         unionFind->unionSet(sampleId,neighborId);
                         //Plotting all edges
                         plotEdge(x,y,i,j);
@@ -476,6 +501,97 @@ int MainWindow::signer(int n){
     if (n<0) return -1;
     else return 0;
 }
+
+
+
+vector<int> MainWindow::dijkstra(Graph graph, int s, int t)
+{
+    Heap q(4);
+
+    Vertex v(0,0), u(0,0);
+    ListAdj *n;
+    ListAdj::iterator it;
+    vector<int> dist(graph.graphSize() + 1);
+    vector<int> parent(graph.graphSize() + 1);
+    vector<bool> visited(graph.graphSize() + 1);
+    int i;
+    double iterations = 0;
+    parent[0] = -1;
+    for(i = 1; i < (int)dist.size(); i++){
+        if(i != s){
+            dist[i] = -1;
+        } else dist[i] = 0;
+    }
+    for(i = 1; i < (int)visited.size(); i++){
+        visited[i] = false;
+    }
+
+    q.insertIntoHeap(s, 0);
+    iterations += q.heapUpQty+q.heapDownQty;
+
+    while(!q.isEmpty())
+    {
+      //cout << "Visiting a vertex. Heap size is " << q.heap.size() << endl;
+        v = q.deleteMin();
+        //cout << "Removed the vertex. Heap size now is " << q.heap.size() << endl;
+
+
+        if(v.getId() == t) break;
+        visited[v.getId()] = true;
+        //cout << "Before getNeighbourhood " << endl;
+        //cout << "Visiting vertex " << v.getId() << endl;
+
+        n = graph.getNeighbourhood(v.getId());
+        //cout << "There are " << n->size() << " neighbors." << endl;
+
+        //cout << "After getNeighbourhood "<<n << endl;
+        for(it = n->begin(); it != n->end(); it++){
+          //cout << "Iterate getNeighbourhood" << endl;
+
+            u = (*it);
+            if(!visited[u.getId()]){
+                if(dist[u.getId()] == -1){
+                    parent[u.getId()]  = v.getId();
+                    dist[u.getId()] = dist[v.getId()] + u.getDistance();
+                    q.insertIntoHeap(u.getId(), dist[u.getId()]);
+
+                }
+                else {
+                    int aux = dist[u.getId()];
+                    if ((dist[v.getId()] + u.getDistance()) > dist[u.getId()]){
+                        dist[u.getId()] =	dist[u.getId()];
+                    }else{
+                        parent[u.getId()]  = v.getId();
+                        dist[u.getId()] =   (dist[v.getId()] + u.getDistance());
+                    }
+                    q.updateVertex(Vertex(u.getId(), aux), dist[u.getId()]);
+
+                }
+            }
+        }
+    }
+
+    printPath(parent,gridMap.grid[gridMap.goalX][gridMap.goalY].id);
+  //  output <<" "<< iterations  <<" " <<deletemin <<" "<< incert<< " "<< update;
+    //cout << "After Djikstra" << endl;
+    return dist;
+}
+
+void MainWindow::printPath(vector<int> parent, int j)
+{
+    // Base Case : If j is source
+    if (parent[j]==-1){
+        cout << "Basecase" << endl;
+        return;
+    }
+
+    printPath(parent, parent[j]);
+
+    cout << "Node "<< j  <<"  -->  ";
+
+}
+
+
 
 /*
 vector<int> MainWindow::dijkstra(Graph graph, int s, int t)

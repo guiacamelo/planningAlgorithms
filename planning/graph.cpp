@@ -55,8 +55,8 @@ void Graph::buildRoadMapSamples(GRID & grid,int originX,int originY,int goalX,in
 
 
     //add initial points to unionfind
-//    unionFind(originId);
-//    unionFind(goalId);
+    //    unionFind(originId);
+    //    unionFind(goalId);
 
 
 
@@ -165,7 +165,8 @@ void Graph::print()
     for(node = graph.begin(); node != graph.end(); node++){
         id = (*node).front().getId();
         for(it = (*node).begin(); it != (*node).end(); it++){
-            cout << id << " " << (*it).getId() << " " << (*it).getDistance() << endl;
+            if (id!=(*it).getId())
+                cout << id << " " << (*it).getId() << " " << (*it).getDistance() << endl;
         }
     }
     cout << "Graph Size" <<graph.size() << endl;
