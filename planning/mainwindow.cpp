@@ -294,12 +294,13 @@ void MainWindow::plotObstacles(GRID & grid){
 }
 
 void MainWindow::plotEdge(int originX,int originY,int destX,int destY){
-    scene->addLine(originX*QT_CELL_SIZE+QT_CELL_SIZE/2.0 - QT_CELL_SIZE/3.0/2.0,
-                   originY*QT_CELL_SIZE+QT_CELL_SIZE/2.0 - QT_CELL_SIZE/3.0/2.0,
-                   destX*QT_CELL_SIZE+QT_CELL_SIZE/2.0 - QT_CELL_SIZE/3.0/2.0,
-                   destY*QT_CELL_SIZE+QT_CELL_SIZE/2.0 - QT_CELL_SIZE/3.0/2.0,
-                   QPen(Qt::green));
-    //QPen(Qt::lightGray));
+    if(PLOT_EDGES)
+        scene->addLine(originX*QT_CELL_SIZE+QT_CELL_SIZE/2.0 - QT_CELL_SIZE/3.0/2.0,
+                       originY*QT_CELL_SIZE+QT_CELL_SIZE/2.0 - QT_CELL_SIZE/3.0/2.0,
+                       destX*QT_CELL_SIZE+QT_CELL_SIZE/2.0 - QT_CELL_SIZE/3.0/2.0,
+                       destY*QT_CELL_SIZE+QT_CELL_SIZE/2.0 - QT_CELL_SIZE/3.0/2.0,
+                       QPen(Qt::green));
+
 }
 
 void MainWindow::plotVectorNode(int x,int y){
@@ -344,9 +345,9 @@ void MainWindow::on_btnPlanPath_clicked()
         getDisconectedNeighborsInRadius(graph.sampleIdsX[i],graph.sampleIdsY[i], unionFind,graph);
     }
     if (unionFind->isSameSet(originId,goalId) )
+    {
         cout<<" Yes\n"<<endl;
-    else
-        cout<<" No\n"<<endl;
+
 
     cout<<unionFind->findSet(originId)<< " "<<endl;
     cout<<unionFind->findSet(goalId)<< " "<<endl;
@@ -356,6 +357,22 @@ void MainWindow::on_btnPlanPath_clicked()
     dist = dijkstra(graph, originId,goalId);
     int distance = dist[goalId];
 
+    //Plot final Path
+    for(int i = 0; i < pathDijkstra.size(); i++){
+        int idNode = pathDijkstra[i];
+        if ((idNode!= originId)&&(idNode!=goalId)){
+
+            for (int j = 0; j < graph.sampleIds.size(); ++j) {
+                if (graph.sampleIds[j] == idNode){
+                    int x=graph.sampleIdsX[j];
+                    int y=graph.sampleIdsY[j];
+                    if(PLOT_PATH)
+                        plotFinalPath(x,y);
+                }
+
+            }
+        }
+    }
 
     if(distance != -1) {
         cout << distance << endl;
@@ -365,8 +382,15 @@ void MainWindow::on_btnPlanPath_clicked()
         cout << "inf" << endl;
         cout << "Distance between " <<originId <<" and "<< goalId<<" is inf";
     }
+    }    else
+        cout<<" No\n"<<endl;
+
 }
 
+void MainWindow::plotFinalPath(int x,int y){
+    scene->addRect(x*QT_CELL_SIZE,y*QT_CELL_SIZE,QT_CELL_SIZE,QT_CELL_SIZE,QPen(Qt::yellow),QBrush(Qt::yellow));
+
+}
 
 void MainWindow::getDisconectedNeighborsInRadius(int x,int y,UnionFind  *unionFind,Graph & graph){
     int sampleId= gridMap.grid[x][y].id;
@@ -398,6 +422,7 @@ void MainWindow::getDisconectedNeighborsInRadius(int x,int y,UnionFind  *unionFi
                         double distance=sqrt((diffx)+(diffy));
                         cout<< "Distance = " << distance<<"    diffx = " << diffx << "   x = "<<x << "  i = "<<i <<"   diffy = " <<diffy<<"  y = " <<y<< "   j = "<< j<<"\n"<<endl;
                         graph.addEdge(sampleId,neighborId,ceil(distance));
+                        graph.addEdge(neighborId,sampleId,ceil(distance));
 
                         unionFind->unionSet(sampleId,neighborId);
                         //Plotting all edges
@@ -531,7 +556,7 @@ vector<int> MainWindow::dijkstra(Graph graph, int s, int t)
 
     while(!q.isEmpty())
     {
-      //cout << "Visiting a vertex. Heap size is " << q.heap.size() << endl;
+        //cout << "Visiting a vertex. Heap size is " << q.heap.size() << endl;
         v = q.deleteMin();
         //cout << "Removed the vertex. Heap size now is " << q.heap.size() << endl;
 
@@ -546,7 +571,7 @@ vector<int> MainWindow::dijkstra(Graph graph, int s, int t)
 
         //cout << "After getNeighbourhood "<<n << endl;
         for(it = n->begin(); it != n->end(); it++){
-          //cout << "Iterate getNeighbourhood" << endl;
+            //cout << "Iterate getNeighbourhood" << endl;
 
             u = (*it);
             if(!visited[u.getId()]){
@@ -572,7 +597,7 @@ vector<int> MainWindow::dijkstra(Graph graph, int s, int t)
     }
 
     printPath(parent,gridMap.grid[gridMap.goalX][gridMap.goalY].id);
-  //  output <<" "<< iterations  <<" " <<deletemin <<" "<< incert<< " "<< update;
+    //  output <<" "<< iterations  <<" " <<deletemin <<" "<< incert<< " "<< update;
     //cout << "After Djikstra" << endl;
     return dist;
 }
@@ -588,86 +613,7 @@ void MainWindow::printPath(vector<int> parent, int j)
     printPath(parent, parent[j]);
 
     cout << "Node "<< j  <<"  -->  ";
-
+    pathDijkstra.push_back(j);
 }
-
-
-
-/*
-vector<int> MainWindow::dijkstra(Graph graph, int s, int t)
-{
-    return vector<int> v;
-
-    Heap q(7);
-    int deletemin=0, incert=0, update=0;
-    Vertex v(0,0), u(0,0);
-    ListAdj *n;
-    ListAdj::iterator it;
-    vector<int> dist(graph.graphSize() + 1);
-    vector<bool> visited(graph.graphSize() + 1);
-    int i;
-    double iterations = 0;
-    for(i = 1; i < (int)dist.size(); i++){
-        if(i != s){
-            dist[i] = -1;
-        } else dist[i] = 0;
-    }
-    for(i = 1; i < (int)visited.size(); i++){
-        visited[i] = false;
-    }
-
-    q.insertIntoHeap(s, 0);
-    iterations += q.heapUpQty+q.heapDownQty;
-
-    while(!q.isEmpty())
-    {
-      //cout << "Visiting a vertex. Heap size is " << q.heap.size() << endl;
-        v = q.deleteMin();deletemin++;
-        //cout << "Removed the vertex. Heap size now is " << q.heap.size() << endl;
-        iterations += q.heapUpQty+q.heapDownQty;
-
-        if(v.getId() == t) break;
-        visited[v.getId()] = true;
-        //cout << "Before getNeighbourhood " << endl;
-        //cout << "Visiting vertex " << v.getId() << endl;
-
-        n = graph.getNeighbourhood(v.getId());
-        //cout << "There are " << n->size() << " neighbors." << endl;
-
-        //cout << "After getNeighbourhood "<<n << endl;
-        for(it = n->begin(); it != n->end(); it++){
-          //cout << "Iterate getNeighbourhood" << endl;
-
-            u = (*it);
-            if(!visited[u.getId()]){
-                if(dist[u.getId()] == -1){
-                    dist[u.getId()] = dist[v.getId()] + u.getDistance();
-                    q.insertIntoHeap(u.getId(), dist[u.getId()]);incert++;
-                    iterations += q.heapUpQty+q.heapDownQty;
-
-                }
-                else {
-                    int aux = dist[u.getId()];
-                    if ((dist[v.getId()] + u.getDistance()) > dist[u.getId()]){
-                        dist[u.getId()] =	dist[u.getId()];
-                    }else{
-                        dist[u.getId()] =   (dist[v.getId()] + u.getDistance());
-                    }
-
-
-
-
-                    q.updateVertex(Vertex(u.getId(), aux), dist[u.getId()]);update++;
-                    iterations += q.heapUpQty+q.heapDownQty;
-
-                }
-            }
-        }
-    }
-    output <<" "<< iterations  <<" " <<deletemin <<" "<< incert<< " "<< update;
-    //cout << "After Djikstra" << endl;
-    return dist;
-}
-    */
 
 

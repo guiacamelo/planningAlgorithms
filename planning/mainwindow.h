@@ -39,7 +39,8 @@ public:
     void plotEdge(int originX,int originY,int destX,int destY);
     vector<int> dijkstra(Graph graph, int s, int t);
     void printPath(vector<int> parent, int j);
-
+    vector<int> pathDijkstra;
+    void plotFinalPath(int x, int y);
 
 signals:
 

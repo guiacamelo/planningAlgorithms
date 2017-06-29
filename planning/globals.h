@@ -3,25 +3,28 @@
 #include "globals.h"
 #include <vector>
 #include<math.h>
-#define QT_CELL_SIZE 6
+#define QT_CELL_SIZE 8
 #define GRID_SIZE 100
 //#define GRID_SIZE 5
 //#define GRID_SIZE 10
-#define SQUARES 50
-#define RECTANGLES 50
+#define SQUARES 25
+#define RECTANGLES 25
 
 //#define SQUARES 1
-//#define RECTANGLES 0
+//#define RECTANGLES 2
 #define PLOT_GRID false
+#define PLOT_EDGES true
+#define PLOT_PATH true
+
 #define MAX_OBJECT_PROPORTION 0.1
 
 #define ORIGIN 0
 #define GOAL 1
 #define NEAREST_K 15
 #define NEAR 5
-#define RADIUS_K 50
+#define RADIUS_K 5
 
-#define SAMPLEPERCENTAGE 0.1
+#define SAMPLEPERCENTAGE 0.14
 #define SAMPLES round(double(GRID_SIZE*GRID_SIZE*SAMPLEPERCENTAGE))
 #define MAX_NUMBER_OF_NODES GRID_SIZE*GRID_SIZE
 #define STOP_WHEN_PATH_FOUND false
