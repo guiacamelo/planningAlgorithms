@@ -51,6 +51,7 @@ public:
     void setOrigin(int x,int y);
     void setGoal(int x,int y);
     void buildRoadMapSamples(GRID & grid,int originX,int originY,int goalX,int goalY);
+    void buildRoadMapSamples(GRID & grid,int originX,int originY,int goalX,int goalY,vector<int> & interconectionsX,vector<int> & interconectionsY);
     //CREATE RANDOM SAMPLE ONLY CONSIDERS FREE SPACES
     void randomSampling(GRID & grid,int idOrigin,int idGoal);
 

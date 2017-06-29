@@ -23,6 +23,58 @@ void Graph::setGoal(int x,int y){
     goalX=x;
     goalY=y;
 }
+void Graph::buildRoadMapSamples(GRID & grid,int originX,int originY,int goalX,int goalY,vector<int> & interconectionsX,vector<int> & interconectionsY){
+    int i=0;
+    // empty the graph
+    for(int k = 0; k < graph.size(); k++) graph.pop_back();
+    int originId=grid[originX][originY].id;
+    int goalId =grid[goalX][goalY].id;
+
+    sampleIds.clear();    sampleIdsX.clear();    sampleIdsY.clear();
+
+    sampleIds.push_back(originId);
+    sampleIdsX.push_back(originX);
+    sampleIdsY.push_back(originY);
+    grid[originX][originY].isVertex = true;
+    //cout<<" X-"<<originX<<"   Y -"<<originY<<"   id -"<<originId<<endl;
+    insertVertex(newVertex(originId));
+
+
+
+    sampleIds.push_back(goalId);
+    sampleIdsX.push_back(goalX);
+    sampleIdsY.push_back(goalY);
+    grid[goalX][goalY].isVertex = true;
+    //Initialization
+    //cout<<" X-"<<goalX<<"   Y -"<<goalY<<"   id -"<<goalId<<endl;
+    insertVertex(newVertex(goalId));
+
+
+
+    //
+
+    // Add Interconections to sample id and to Graph
+    for (int l = 0; l < interconectionsX.size(); ++l) {
+        int interx=interconectionsX[l];
+        int intery=interconectionsY[l];
+        int interId= grid[interx][intery].id;
+        // check if sample is not origin or goal Also check is same sample have not yet been added
+        if ((interId!=originId) && (interId!=goalId)
+                &&!(std::find(sampleIds.begin(), sampleIds.end(), interId) != sampleIds.end())
+                ){
+            //cout<<sampleId<<endl;
+            sampleIds.push_back(interId);
+            sampleIdsX.push_back(interx);
+            sampleIdsY.push_back(intery);
+            insertVertex(newVertex(interId));
+            grid[interx][intery].isVertex = true;
+
+        }
+
+    }
+
+    randomSampling(grid,originId,goalId);
+}
 
 void Graph::buildRoadMapSamples(GRID & grid,int originX,int originY,int goalX,int goalY){
     int i=0;

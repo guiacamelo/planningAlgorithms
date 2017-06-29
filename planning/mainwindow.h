@@ -41,6 +41,8 @@ public:
     void printPath(vector<int> parent, int j);
     vector<int> pathDijkstra;
     void plotFinalPath(int x, int y);
+    void plotInterconection(int x, int y);
+    bool allInSameSet(int o,int d);
 
 signals:
 
@@ -62,6 +64,8 @@ private:
     GridMap gridMap;
     bool originSet;
     bool goalSet;
+    vector<int> interconectionsX;
+    vector<int> interconectionsY;
 
 };
 

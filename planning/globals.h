@@ -14,7 +14,7 @@
 //#define RECTANGLES 2
 #define PLOT_GRID false
 #define PLOT_EDGES true
-#define PLOT_PATH true
+#define PLOT_PATH false
 
 #define MAX_OBJECT_PROPORTION 0.1
 

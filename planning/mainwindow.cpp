@@ -34,15 +34,17 @@ MainWindow::~MainWindow()
     delete ui;
 
 }
-
+void MainWindow::plotInterconection(int x, int y){
+    scene->addRect(x*QT_CELL_SIZE+QT_CELL_SIZE/2.0 ,
+                   y*QT_CELL_SIZE+QT_CELL_SIZE/2.0 ,
+                   QT_CELL_SIZE,
+                   QT_CELL_SIZE,
+                   QPen(QColor(0, 200, 150)),QBrush((QColor(0, 200, 150))));
+}
 void MainWindow::mousePressEvent(QMouseEvent * e){
 
     if(!ui->graphicsView->isEnabled())
         return;
-    if (originSet&&goalSet){
-        ui->lblTopMessage->setText("Origin and Goal Points already set");
-        return;
-    }
 
     QPoint origin = ui->graphicsView->mapFromGlobal(QCursor::pos());
     QPointF relativeOrigin = ui->graphicsView->mapToScene(origin);
@@ -58,11 +60,22 @@ void MainWindow::mousePressEvent(QMouseEvent * e){
     //protect from clicks out of the grid
     if(posXCliked>gridMap.grid.size()-1||posYCliked>gridMap.grid.size()-1)
         return;
-
     // check is position is free
     if (gridMap.grid[posXCliked][posYCliked].obstacle){
         ui->lblTopMessage->setText("Not a free cell, Click on a free space");
     }else{
+        if (originSet&&goalSet){
+            ui->lblTopMessage->setText("Setting Other points to visit");
+            interconectionsX.push_back(posXCliked);
+            interconectionsY.push_back(posYCliked);
+            plotInterconection(posXCliked,posYCliked);
+
+            return;
+        }
+
+
+
+
 
         if (!originSet){
             paintMouseClickPos(posXCliked,posYCliked,ORIGIN);
@@ -332,7 +345,7 @@ void MainWindow::on_btnPlanPath_clicked()
     graph.setOrigin(gridMap.originX,gridMap.originY);
 
 
-    graph.buildRoadMapSamples(gridMap.grid,gridMap.originX,gridMap.originY,gridMap.goalX,gridMap.goalY);
+    graph.buildRoadMapSamples(gridMap.grid,gridMap.originX,gridMap.originY,gridMap.goalX,gridMap.goalY,interconectionsX,interconectionsY);
     plotSamples(graph.sampleIds,graph.sampleIdsX,graph.sampleIdsY);
     int originId=gridMap.grid[gridMap.originX][gridMap.originY].id;
     int goalId=gridMap.grid[gridMap.goalX][gridMap.goalY].id;
@@ -349,43 +362,70 @@ void MainWindow::on_btnPlanPath_clicked()
         cout<<" Yes\n"<<endl;
 
 
-    cout<<unionFind->findSet(originId)<< " "<<endl;
-    cout<<unionFind->findSet(goalId)<< " "<<endl;
+        cout<<unionFind->findSet(originId)<< " "<<endl;
+        cout<<unionFind->findSet(goalId)<< " "<<endl;
 
-    //graph.print();
-    vector<int> dist;
-    dist = dijkstra(graph, originId,goalId);
-    int distance = dist[goalId];
+        //graph.print();
+        vector<int> dist;
+        dist = dijkstra(graph, originId,goalId);
+        int distance = dist[goalId];
 
-    //Plot final Path
-    for(int i = 0; i < pathDijkstra.size(); i++){
-        int idNode = pathDijkstra[i];
-        if ((idNode!= originId)&&(idNode!=goalId)){
 
-            for (int j = 0; j < graph.sampleIds.size(); ++j) {
-                if (graph.sampleIds[j] == idNode){
-                    int x=graph.sampleIdsX[j];
-                    int y=graph.sampleIdsY[j];
-                    if(PLOT_PATH)
-                        plotFinalPath(x,y);
+
+        //Plot final Path
+        for(int i = 0; i < pathDijkstra.size(); i++){
+            int idNode = pathDijkstra[i];
+            if ((idNode!= originId)&&(idNode!=goalId)){
+
+                for (int j = 0; j < graph.sampleIds.size(); ++j) {
+                    if (graph.sampleIds[j] == idNode){
+                        int x=graph.sampleIdsX[j];
+                        int y=graph.sampleIdsY[j];
+                        if(PLOT_PATH)
+                            plotFinalPath(x,y);
+                    }
+
                 }
-
             }
         }
-    }
 
-    if(distance != -1) {
-        cout << distance << endl;
-        cout<<"Distance between " <<originId <<" and "<< goalId<<" is "<< distance<< endl;
+        if(distance != -1) {
+            cout << distance << endl;
+            cout<<"Distance between " <<originId <<" and "<< goalId<<" is "<< distance<< endl;
 
-    } else{
-        cout << "inf" << endl;
-        cout << "Distance between " <<originId <<" and "<< goalId<<" is inf";
-    }
+        } else{
+            cout << "inf" << endl;
+            cout << "Distance between " <<originId <<" and "<< goalId<<" is inf";
+        }
     }    else
         cout<<" No\n"<<endl;
 
+
+    bool sameSet=true;
+    int rep;
+
+    rep=  unionFind->findSet(originId);
+    if (rep != unionFind->findSet(goalId)){
+        sameSet=false;
+    }
+
+    for (int w=0;w<interconectionsX.size();++w)
+    {
+        int intid=gridMap.grid[interconectionsX[w]][interconectionsY[w]].id;
+        if (rep != unionFind->findSet(intid))
+             sameSet=false;
+    }
+
+
+    if (sameSet){
+        cout<<" A Path including all points is possible \n"<<endl;
+    }else{
+        cout<<" There is no Path amont all points\n"<<endl;
+    }
+
+
 }
+
 
 void MainWindow::plotFinalPath(int x,int y){
     scene->addRect(x*QT_CELL_SIZE,y*QT_CELL_SIZE,QT_CELL_SIZE,QT_CELL_SIZE,QPen(Qt::yellow),QBrush(Qt::yellow));
